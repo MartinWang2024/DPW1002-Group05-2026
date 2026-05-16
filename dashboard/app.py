@@ -67,7 +67,7 @@ def main() -> None:
     elif page == "回归模型":
         tab_regression.render()
     elif page == "预算分析":
-        tab_buget.render(ANALYSIS_DIR)
+        tab_buget.render()
     elif page == "机器学习模型":
         tab_ml.render()
 

@@ -19,7 +19,7 @@ def render() -> None:
     st.caption("数据来源: movies_metadata_cleaned.csv + ratings_small_cleaned.csv")
 
     # ── 核心发现 ──────────────────────────────────────────────────────────
-    st.subheader("🔍 核心发现 (Core Insights)")
+    st.subheader("Core Insights")
     st.info(
         "通过对 **1203 部**有效电影样本的分析，我们得到了一个相当反直觉的结论："
         "**\u201c叫好\u201d并不等于\u201c叫座\u201d**。"

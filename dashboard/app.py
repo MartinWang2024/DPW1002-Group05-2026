@@ -23,9 +23,10 @@ from tabs import (  # noqa: E402
     tab_index,
     tab_buget,
     tab_country,
+    tab_date,
+    tab_keywords,
     tab_people,
     tab_rating,
-    tab_regression,
     tab_ml,
 )
 
@@ -41,15 +42,16 @@ def main() -> None:
 
     # ── Sidebar Navigation ────────────────────────────────────────────────
     with st.sidebar:
-        st.header("📊 分析模块")
+        st.header("分析模块")
         page = st.radio(
             "选择页面",
             options=[
                 "数据概览",
                 "国家分析",
+                "上映日期分析",
+                "关键词分析",
                 "人物分析",
                 "评分分析",
-                "回归模型",
                 "预算分析",
                 "机器学习模型",
             ],
@@ -60,12 +62,14 @@ def main() -> None:
         tab_index.render(movies_df, rating_df)
     elif page == "国家分析":
         tab_country.render()
+    elif page == "上映日期分析":
+        tab_date.render()
+    elif page == "关键词分析":
+        tab_keywords.render()
     elif page == "人物分析":
         tab_people.render()
     elif page == "评分分析":
         tab_rating.render()
-    elif page == "回归模型":
-        tab_regression.render()
     elif page == "预算分析":
         tab_buget.render()
     elif page == "机器学习模型":

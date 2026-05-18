@@ -1,9 +1,3 @@
-"""
-tabs/tab_date.py
-Tab: 上映日期分析
-来源逻辑: analysis/movie_analysis.ipynb
-"""
-
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -22,30 +16,27 @@ MONTH_LABELS = [
 
 
 def render() -> None:
-    st.header("上映日期分析 (Release Date Analysis)")
-    st.caption("数据来源: movies_metadata_box_office.csv")
+    st.header("Release Date Analysis")
+    st.caption("Data Source: movies_metadata_box_office.csv")
 
     st.subheader("Core Insights")
     st.info(
-        "基于电影上映时间与票房数据的分析可以看出，电影票房不仅具有显著的长期增长趋势，"
-        "也呈现出明显的季节性规律。年份维度反映产业规模扩张，月份维度则揭示档期选择对"
-        "商业表现的直接影响。"
+        "Analysis based on movie release dates and box office data shows that movie box office not only has a significant long-term growth trend, "
+        "but also exhibits clear seasonal patterns. The yearly dimension reflects the expansion of industry scale, while the monthly dimension reveals the direct impact of release timing on commercial performance."
     )
     col_a, col_b = st.columns(2)
     col_a.success(
-        "长期增长趋势\n\n"
-        "从 1920 年至今，电影平均票房整体显著上升，尤其 2000 年后增长更快，"
-        "反映出电影市场规模和商业化程度持续扩张。"
+        "Long-term Growth Trend\n\n"
+        "Global box office shows a long-term upward trend, with accelerated growth after 2000, indicating continuous expansion of market scale and commercial value."
     )
     col_b.warning(
-        "档期效应明显\n\n"
-        "5-7 月及 11 月是平均票房最高的黄金档，1 月和 9 月表现最弱，说明上映月份"
-        "会显著影响商业表现。"
+        "Significant Release Timing Effect\n\n"
+        "The summer months of May–June and the year-end period of November are golden windows, with significantly higher average box office, making them the optimal release periods of the year."
     )
 
     st.divider()
 
-    with st.spinner("加载数据中..."):
+    with st.spinner("Loading data..."):
         df = load_box_office_full()
 
     df = df.copy()
@@ -83,17 +74,17 @@ def render() -> None:
     mse = mean_squared_error(y_test, y_pred)
 
     c1, c2, c3 = st.columns(3)
-    c1.metric("有效样本", f"{len(df):,}")
-    c2.metric("最高票房月份", MONTH_LABELS[int(monthly_revenue.loc[monthly_revenue['revenue_m'].idxmax(), 'release_month']) - 1])
-    c3.metric("年份跨度", f"{yearly_revenue['release_year'].min()} - {yearly_revenue['release_year'].max()}")
+    c1.metric("Valid Samples", f"{len(df):,}")
+    c2.metric("Highest Revenue Month", MONTH_LABELS[int(monthly_revenue.loc[monthly_revenue['revenue_m'].idxmax(), 'release_month']) - 1])
+    c3.metric("Year Span", f"{yearly_revenue['release_year'].min()} - {yearly_revenue['release_year'].max()}")
 
     c4, c5 = st.columns(2)
-    c4.metric("回归样本", f"{len(model_df):,}")
-    c5.metric("回归 MSE", f"{mse:,.1f}")
+    c4.metric("Regression Samples", f"{len(model_df):,}")
+    c5.metric("Regression MSE", f"{mse:,.1f}")
 
     sns.set_theme(style="whitegrid", context="talk")
 
-    st.subheader("① 按上映年份划分的平均票房")
+    st.subheader("1. Average Revenue by Release Year")
     fig1, ax1 = plt.subplots(figsize=(14, 6), dpi=100)
     sns.lineplot(
         data=yearly_revenue,
@@ -111,16 +102,16 @@ def render() -> None:
     st.pyplot(fig1, use_container_width=True)
     plt.close(fig1)
 
-    with st.expander("📊 图表解读：按上映年份划分的平均票房", expanded=True):
+    with st.expander("Visuals Explanation", expanded=True):
         st.markdown(
-            "这张折线图展示了电影平均票房随上映年份的变化趋势。\n\n"
-            "1. 整体来看，从 1920 年至今，电影的平均票房呈现出长期显著的上升趋势，尤其在 2000 年后增长速度明显加快，反映出电影市场规模的持续扩张。\n"
-            "2. 数据中存在明显的波动和局部峰值，例如 1940 年前后的一个高值点，以及 2010 年后持续走高的曲线，说明票房增长并非匀速，受时代背景、产业发展和头部爆款影片的影响较大。"
+            "This line chart shows the trend of average movie revenue over the years.\n\n"
+            "1. Overall, from 1920 to the present, the average movie revenue shows a long-term significant upward trend, especially after 2000, indicating continuous expansion of the movie market.\n"
+            "2. There are noticeable fluctuations and local peaks in the data, such as a high point around 1940 and a continuous rise after 2010, indicating that revenue growth is not uniform and is influenced by historical context, industry development, and blockbuster movies."
         )
 
     st.divider()
 
-    st.subheader("② 按上映月份划分的平均票房")
+    st.subheader("2. Average Revenue by Release Month")
     fig2, ax2 = plt.subplots(figsize=(14, 6), dpi=100)
     sns.barplot(
         data=monthly_revenue,
@@ -150,16 +141,16 @@ def render() -> None:
     st.pyplot(fig2, use_container_width=True)
     plt.close(fig2)
 
-    with st.expander("📊 图表解读：按上映月份划分的平均票房", expanded=True):
+    with st.expander("Visuals Explanation", expanded=True):
         st.markdown(
-            "这张柱状图对比了不同月份上映电影的平均票房表现，揭示了明显的季节性规律：\n\n"
-            "1. 票房表现的黄金档集中在 5 月、6 月、7 月和 11 月，其中 5 月和 6 月的平均票房最高，是全年的票房高峰。\n"
-            "2. 相比之下，1 月和 9 月的平均票房为全年最低，说明上映月份对电影票房有显著影响，暑期档和年末档更易产出高票房作品。"
+            "This bar chart compares the average movie revenue across different release months, revealing clear seasonal patterns:\n\n"
+            "1. The golden periods for box office performance are concentrated in May, June, July, and November, with May and June having the highest average revenue, representing the peak months of the year.\n"
+            "2. In contrast, January and September have the lowest average revenue, indicating that the release month significantly impacts movie revenue, with summer and year-end periods more likely to produce high-grossing films."
         )
 
     st.divider()
 
-    st.subheader("③ 回归分析：实际票房 vs 预测票房")
+    st.subheader("3. Regression Analysis: Actual Revenue vs Predicted Revenue")
     fig3, ax3 = plt.subplots(figsize=(14, 6), dpi=100)
     sns.scatterplot(
         x=y_test,
@@ -179,9 +170,9 @@ def render() -> None:
     st.pyplot(fig3, use_container_width=True)
     plt.close(fig3)
 
-    with st.expander("📊 图表解读：实际票房 vs 预测票房", expanded=True):
+    with st.expander("Visuals Explanation", expanded=True):
         st.markdown(
-            "这张散点图用于评估票房预测模型的效果，横轴为电影的实际票房，纵轴为模型预测的票房。\n\n"
-            "1. 数据点整体呈现出从左下到右上的正相关趋势，说明模型的预测结果与实际票房有一定的正相关性，能够捕捉到票房的大致规律。\n"
-            "2. 但数据点分布较为分散，尤其是在高票房区间（实际票房 > 5 亿），预测值与实际值的偏差明显增大，说明模型对头部爆款电影的预测能力较弱，整体预测精度仍有提升空间。"
+            "This scatter plot is used to evaluate the performance of the box office prediction model, with the x-axis representing the actual revenue of the movies and the y-axis representing the predicted revenue by the model.\n\n"
+            "1. The data points generally show a positive correlation trend from the bottom left to the top right, indicating that the model's predictions have a certain positive correlation with the actual revenue and can capture the general pattern of box office performance.\n"
+            "2. However, the data points are relatively scattered, especially in the high-revenue range (actual revenue > 500 million), where the deviation between predicted and actual values is significant, indicating that the model's ability to predict blockbuster movies is weak, and there is still room for improvement in overall prediction accuracy."
         )

@@ -37,7 +37,6 @@ PURPLE = "#8172B2"
 DATA_ROOT = Path(__file__).resolve().parents[2] / "cleaned_archive"
 
 
-@st.cache_resource(show_spinner="训练模型中，请稍候…")
 def _train_models():
     """Load data, engineer features, train LR & RF, return all artefacts."""
     df = pd.read_csv(DATA_ROOT / "movies_metadata_cleaned.csv", low_memory=False)
@@ -268,8 +267,8 @@ def _fig3_cm_rf_fi(m: dict) -> plt.Figure:
 
 
 def render() -> None:
-    st.header("机器学习模型 (Machine Learning Models)")
-    st.caption("本页面展示电影盈利能力预测的机器学习模型结果。")
+    st.header("Machine Learning Models")
+    st.caption("This page presents the results of machine learning models predicting movie profitability.")
 
     st.markdown(
         """
@@ -316,16 +315,16 @@ def render() -> None:
     m = _train_models()
 
     # ── Figure 1 ──────────────────────────────────────────────
-    st.subheader("① Model Performance Comparison & ROC Curves")
+    st.subheader("1. Model Performance Comparison & ROC Curves")
     fig1 = _fig1_comparison_roc(m)
     st.pyplot(fig1, use_container_width=True)
     plt.close(fig1)
 
-    with st.expander("📊 图表解读：模型性能对比 & ROC 曲线", expanded=True):
+    with st.expander("Visuals Explanation", expanded=True):
         col_l, col_r = st.columns(2)
         with col_l:
             st.markdown(
-                "**左图 — Model Accuracy Comparison (Bar Chart)**\n\n"
+                "**Left Chart — Model Accuracy Comparison (Bar Chart)**\n\n"
                 "The chart compares the prediction performance of Logistic Regression and "
                 "Random Forest.\n\n"
                 "| Metric | Logistic Regression | Random Forest |\n"
@@ -338,7 +337,7 @@ def render() -> None:
             )
         with col_r:
             st.markdown(
-                "**右图 — ROC Curve Comparison**\n\n"
+                "**Right Chart — ROC Curve Comparison**\n\n"
                 "The ROC curves visualize the classification capability of both machine "
                 "learning models.\n\n"
                 "Random Forest achieves the highest ROC-AUC score (0.852), indicating "
@@ -350,23 +349,23 @@ def render() -> None:
     st.divider()
 
     # ── Figure 2 ──────────────────────────────────────────────
-    st.subheader("② Cross-Validation & Logistic Regression Confusion Matrix")
+    st.subheader("2. Cross-Validation & Logistic Regression Confusion Matrix")
     fig2 = _fig2_cv_cm_lr(m)
     st.pyplot(fig2, use_container_width=True)
     plt.close(fig2)
 
-    with st.expander("📊 图表解读：交叉验证 & LR 混淆矩阵", expanded=True):
+    with st.expander("Visuals Explanation", expanded=True):
         col_l, col_r = st.columns(2)
         with col_l:
             st.markdown(
-                "**左图 — Cross Validation ROC-AUC (Boxplot)**\n\n"
+                "**Left Chart — Cross Validation ROC-AUC (Boxplot)**\n\n"
                 "The boxplot compares cross-validation performance stability between models.\n\n"
                 "Both models maintain relatively stable ROC-AUC scores across validation folds, "
                 "indicating good generalization performance and limited overfitting."
             )
         with col_r:
             st.markdown(
-                "**右图 — Logistic Regression Confusion Matrix**\n\n"
+                "**Right Chart — Logistic Regression Confusion Matrix**\n\n"
                 "The confusion matrix visualizes prediction distribution for profitable and "
                 "non-profitable movies using Logistic Regression.\n\n"
                 "The model demonstrates acceptable classification capability but shows weaker "
@@ -376,16 +375,16 @@ def render() -> None:
     st.divider()
 
     # ── Figure 3 ──────────────────────────────────────────────
-    st.subheader("③ Random Forest Confusion Matrix & Feature Importances")
+    st.subheader("3. Random Forest Confusion Matrix & Feature Importances")
     fig3 = _fig3_cm_rf_fi(m)
     st.pyplot(fig3, use_container_width=True)
     plt.close(fig3)
 
-    with st.expander("📊 图表解读：RF 混淆矩阵 & 特征重要性", expanded=True):
+    with st.expander("Visuals Explanation", expanded=True):
         col_l, col_r = st.columns(2)
         with col_l:
             st.markdown(
-                "**左图 — Random Forest Confusion Matrix**\n\n"
+                "**Left Chart — Random Forest Confusion Matrix**\n\n"
                 "The confusion matrix demonstrates the stronger classification capability of "
                 "Random Forest.\n\n"
                 "Compared with Logistic Regression, Random Forest produces more balanced "
@@ -393,7 +392,7 @@ def render() -> None:
             )
         with col_r:
             st.markdown(
-                "**右图 — Feature Importance (Random Forest)**\n\n"
+                "**Right Chart — Feature Importance (Random Forest)**\n\n"
                 "The chart visualizes the most influential variables contributing to "
                 "profitability prediction.\n\n"
                 "Feature importance analysis reveals that **release year**, **budget** (log), "
@@ -406,6 +405,5 @@ def render() -> None:
     st.divider()
 
     st.info(
-        "模型训练结果已通过 `@st.cache_resource` 缓存，刷新页面不会重复训练。\n\n"
-        "完整训练脚本见 `regression_model/profitability_model.py`。"
+        "The complete training script can be found in `regression_model/profitability_model.py`."
     )

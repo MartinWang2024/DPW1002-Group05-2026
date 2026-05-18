@@ -28,8 +28,7 @@ dashboard/
     ├── tab_index.py      → 数据概览（预算/票房/评分/国家）
     ├── tab_country.py    → 国家分析（Data_A&V_country.py）
     ├── tab_people.py     → 人物分析（Data_A&V_peo.py）
-    ├── tab_rating.py     → 评分分析（main.py + main_visulization.py）
-    ├── tab_correlation.py → 相关性分析（pearson_and_spearman*.py）
+    ├── tab_rating.py     → 评分分析（main.py + main_visulization.py + pearson_and_spearman*.py）
     ├── tab_regression.py → 回归模型（movie_analysis_fixed.py）
     └── tab_buget.py      → Budget 预算（budget_analysis.ipynb）
 ```

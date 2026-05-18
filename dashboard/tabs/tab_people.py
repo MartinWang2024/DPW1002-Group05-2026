@@ -8,6 +8,7 @@ import ast
 
 import matplotlib.pyplot as plt
 import seaborn as sns
+import pandas as pd
 import streamlit as st
 from matplotlib.ticker import FuncFormatter
 
@@ -23,10 +24,10 @@ def _clean_list(s) -> list:
 
 
 def render() -> None:
-    st.header("人物分析 (Actors & Directors)")
-    st.caption("数据来源: movies_metadata_box_office.csv + credits_cleaned.csv")
+    st.header("Actors & Directors Analysis")
+    st.caption("Data Source: movies_metadata_box_office.csv + credits_cleaned.csv")
 
-    # ── 核心发现 ──────────────────────────────────────────────────────────
+    # ── Core Insights ──────────────────────────────────────────────────────────
     st.subheader("Core Insights")
     st.info(
         "We shifted our analytical perspective down to specific cast and crew members to explore the relationship between personal branding, productivity, and box office appeal."
@@ -46,7 +47,7 @@ def render() -> None:
     )
     st.divider()
 
-    with st.spinner("加载数据中..."):
+    with st.spinner("Loading data..."):
         df_box = load_box_office_full()
         df_credits = load_credits_data()
 
@@ -71,8 +72,18 @@ def render() -> None:
         .sort_values(ascending=False).head(10)
     )
 
-    # ── 演员分析 ──────────────────────────────────────────────────────────────
-    st.subheader("演员分析 (Actors)")
+    # ── Data Panel ────────────────────────────────────────────────────────────
+    st.subheader("People Statistics")
+    total_movies = df["id"].nunique()
+    unique_actors = df_cast["cast_list_clean"].nunique()
+    unique_directors = df_dir["directors_clean"].nunique()
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Total Movies", f"{total_movies:,}")
+    c2.metric("Unique Actors", f"{unique_actors:,}")
+    c3.metric("Unique Directors", f"{unique_directors:,}")
+
+    # ── Actors Analysis ──────────────────────────────────────────────────────────────
+    st.subheader("1. Actors Analysis")
     fig_actors, axes_actors = plt.subplots(1, 2, figsize=(20, 7))
 
     color_count = sns.color_palette("ch:s=.25,rot=-.25", 10)[::-1]
@@ -81,7 +92,7 @@ def render() -> None:
     def billion_fmt(x, _):
         return f"${x * 1e-9:.1f}B"
 
-    # 图1 演员出演数量
+    # Chart 1: Number of Movies per Actor
     sns.barplot(ax=axes_actors[0], x=top_actors_count.values, y=top_actors_count.index,
                 palette=color_count, edgecolor="black", linewidth=0.5)
     axes_actors[0].set_title("Top 10 Actors by Movie Count", fontsize=16, fontweight="bold", pad=12)
@@ -90,7 +101,7 @@ def render() -> None:
     for i, v in enumerate(top_actors_count.values):
         axes_actors[0].text(v + 0.3, i, f" {v}", va="center", fontsize=12, fontweight="bold", color="#333333")
 
-    # 图2 演员累计利润
+    # Chart 2: Total Profit per Actor
     sns.barplot(ax=axes_actors[1], x=top_actors_profit.values, y=top_actors_profit.index,
                 palette=color_profit, edgecolor="black", linewidth=0.5)
     axes_actors[1].set_title("Top 10 Actors by Total Profit", fontsize=16, fontweight="bold", pad=12)
@@ -109,16 +120,16 @@ def render() -> None:
     st.pyplot(fig_actors)
     plt.close(fig_actors)
 
-    with st.expander("📊 Visuals Explanation", expanded=True):
+    with st.expander("Visuals Explanation", expanded=True):
         st.markdown(
-            "**Top Row (Actors Analysis):** By cross-referencing the left chart (most prolific) and the right chart (highest-grossing), we can visually categorize actors into three distinct success models: the \"Franchise Winners\" (e.g., Emma Watson, Daniel Radcliffe on the right), the \"Pure Hardworkers\" (e.g., Robert De Niro, Bruce Willis exclusively on the left), and the \"Dual-Threat Legends\" (Tom Cruise, Tom Hanks, Johnny Depp, who impressively bridge the gap and appear on both lists)."
+            "By cross-referencing the left chart (most prolific) and the right chart (highest-grossing), we can visually categorize actors into three distinct success models: the \"Franchise Winners\" (e.g., Emma Watson, Daniel Radcliffe on the right), the \"Pure Hardworkers\" (e.g., Robert De Niro, Bruce Willis exclusively on the left), and the \"Dual-Threat Legends\" (Tom Cruise, Tom Hanks, Johnny Depp, who impressively bridge the gap and appear on both lists)."
         )
 
-    # ── 导演分析 ──────────────────────────────────────────────────────────────
-    st.subheader("导演分析 (Directors)")
+    # ── Directors Analysis ──────────────────────────────────────────────────────────────
+    st.subheader("2. Directors Analysis")
     fig_directors, axes_directors = plt.subplots(1, 2, figsize=(20, 7))
 
-    # 图3 导演执导数量
+    # Chart 3: Number of Movies per Director
     sns.barplot(ax=axes_directors[0], x=top_dir_count.values, y=top_dir_count.index,
                 palette=color_count, edgecolor="black", linewidth=0.5)
     axes_directors[0].set_title("Top 10 Directors by Movie Count", fontsize=16, fontweight="bold", pad=12)
@@ -127,7 +138,7 @@ def render() -> None:
     for i, v in enumerate(top_dir_count.values):
         axes_directors[0].text(v + 0.2, i, f" {v}", va="center", fontsize=12, fontweight="bold", color="#333333")
 
-    # 图4 导演累计利润
+    # Chart 4: Total Profit per Director
     sns.barplot(ax=axes_directors[1], x=top_dir_profit.values, y=top_dir_profit.index,
                 palette=color_profit, edgecolor="black", linewidth=0.5)
     axes_directors[1].set_title("Top 10 Directors by Total Profit", fontsize=16, fontweight="bold", pad=12)
@@ -146,8 +157,8 @@ def render() -> None:
     st.pyplot(fig_directors)
     plt.close(fig_directors)
 
-    # ── 图表解读 ────────────────────────────────────────────────────────────
-    with st.expander("📊 Visuals Explanation", expanded=True):
+    # ── Visuals Explanation ────────────────────────────────────────────────────────────
+    with st.expander("Visuals Explanation", expanded=True):
         st.markdown(
-            "**Bottom Row (Directors Analysis):** The presence of Steven Spielberg at the very top of both charts visually cements his status as the undisputed king of commercial cinema, while the high rankings of Peter Jackson and James Cameron on the right chart emphasize the immense financial impact of top-tier blockbuster directors."
+            "The presence of Steven Spielberg at the very top of both charts visually cements his status as the undisputed king of commercial cinema, while the high rankings of Peter Jackson and James Cameron on the right chart emphasize the immense financial impact of top-tier blockbuster directors."
         )

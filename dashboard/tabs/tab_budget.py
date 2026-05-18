@@ -1,9 +1,3 @@
-"""
-tabs/tab_buget.py
-Tab: Budget Analysis
-直接从 cleaned_archive/movies_metadata_box_office.csv 读取数据并生成图表。
-"""
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -15,48 +9,49 @@ from data_loader import load_movies_data
 
 def render() -> None:
     st.header("Budget Analysis")
-    st.caption("数据来源: movies_metadata_box_office.csv")
+    st.caption("Data Source: movies_metadata_box_office.csv")
 
     # ── Core Insights & Summary ───────────────────────────────────────────
     st.subheader("Core Insights")
     st.info(
-        "基于有效电影样本数据，本研究系统分析了预算、票房与投资回报率（ROI）之间的关系。"
-        "结果表明：电影行业以中小成本为主，预算呈右偏分布；1950 年以来制作成本持续上涨，"
-        "2000 年后增速加快。预算与票房呈强正相关，高投入整体带来高产出，但边际回报递减；"
-        "行业 ROI 呈右偏分布，半数以上电影可盈利，盈利高度依赖头部爆款。"
-        "低预算（0–3000 万美元）区间投资性价比最高，而高预算项目回报效率偏低、风险更高。"
+        "Based on valid movie sample data, this study systematically analyzes the relationship between budget, box office, and return on investment (ROI)."
+
+        "The results indicate that the film industry is dominated by small and medium budgets, with a right-skewed distribution; production costs have been rising since 1950,"
+        "with an accelerated increase after 2000. Budget and box office are strongly positively correlated, with high investment generally leading to high output, but with diminishing marginal returns;"
+        "industry ROI is right-skewed, with more than half of the films being profitable, heavily reliant on blockbuster hits."
+        "Low-budget (0–30 million USD) films offer the highest investment efficiency, while high-budget projects have lower returns and higher risks."
     )
 
     a1, a2, a3 = st.columns(3)
     a1.success(
-        "**成本结构**\n\n"
-        "预算分布显著右偏，\n"
-        "行业主流集中在中小成本。"
+        "**Cost Structure**\n\n"
+        "Budget distribution is significantly right-skewed,\n"
+        "with the industry mainly concentrated in small and medium budgets."
     )
     a2.warning(
-        "**长期趋势**\n\n"
-        "1950 年以来制作成本上升，\n"
-        "2000 年后增速明显加快。"
+        "**Long-term Trend**\n\n"
+        "Production costs have been rising since 1950,\n"
+        "with an accelerated increase after 2000."
     )
     a3.error(
-        "**回报效率**\n\n"
-        "预算越高票房通常越高，\n"
-        "但 ROI 边际效率递减。"
+        "**Return Efficiency**\n\n"
+        "Higher budgets generally lead to higher box office,\n"
+        "but ROI exhibits diminishing marginal returns."
     )
 
     st.divider()
 
-    with st.spinner("加载数据中..."):
+    with st.spinner("Loading data..."):
         df = load_movies_data()
 
-    # ── ROI & 利润计算 ────────────────────────────────────────────────────
+    # ── ROI & Profit Calculation ─────────────────────────────────────────────
     df = df.copy()
     df["ROI_pct"] = ((df["revenue"] - df["budget"]) / df["budget"]) * 100
 
-    # 筛选 1950 年以后
+    # Filter movies released after 1950
     df_analysis = df[df["release_year"] >= 1950].copy()
 
-    # 预算分箱（10 个等宽区间）
+    # Budget binning (10 equal-width bins)
     df_analysis["budget_bin"] = pd.cut(df_analysis["budget_M"], bins=10, labels=False)
     budget_mid = (
         df_analysis.groupby("budget_bin", observed=False)["budget_M"]
@@ -66,16 +61,16 @@ def render() -> None:
 
     sns.set_style("whitegrid")
 
-    # ── 指标概览 ──────────────────────────────────────────────────────────
+    # ── Metrics Overview ──────────────────────────────────────────────────────────
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("有效样本", f"{len(df_analysis):,} ")
-    c2.metric("平均预算", f"${df_analysis['budget_M'].mean():.1f}M")
-    c3.metric("平均 ROI", f"{df_analysis['ROI_pct'].mean():.1f}%")
-    c4.metric("中位数 ROI", f"{df_analysis['ROI_pct'].median():.1f}%")
+    c1.metric("Valid Samples", f"{len(df_analysis):,} ")
+    c2.metric("Average Budget", f"${df_analysis['budget_M'].mean():.1f}M")
+    c3.metric("Average ROI", f"{df_analysis['ROI_pct'].mean():.1f}%")
+    c4.metric("Median ROI", f"{df_analysis['ROI_pct'].median():.1f}%")
 
     st.divider()
 
-    # ── 图1：预算分布直方图 ───────────────────────────────────────────────
+    # ── Figure 1: Movie Budget Distribution ───────────────────────────────────────────────
     st.subheader("1. Movie Budget Distribution")
     max_budget_M = 100
     data_hist = df_analysis[df_analysis["budget_M"] <= max_budget_M]["budget_M"]
@@ -90,17 +85,17 @@ def render() -> None:
     st.pyplot(fig1)
     plt.close(fig1)
 
-    with st.expander("图表 1 解读：电影预算分布直方图（≤1 亿美元）", expanded=True):
+    with st.expander("Visuals Explanation", expanded=True):
         st.markdown(
-            "**图表目的**：展示 1 亿美元预算以内的电影数量分布特征，识别行业主流预算区间。"
+            "**Purpose**: Show the distribution of movies with budgets under $100M, identifying the mainstream budget range."
         )
         st.markdown(
-            "1. 预算呈显著右偏分布，电影数量随预算升高快速下降，符合“中小成本为主、大制作稀少”的结构。\n"
-            "2. 主流预算集中在 0-4000 万美元，且 1000-2000 万美元通常是密度最高区间。\n"
-            "3. 8000 万美元以上电影占比很低，属于头部高成本项目。"
+            "1. The budget distribution is significantly right-skewed, with the number of movies decreasing rapidly as the budget increases, reflecting a structure dominated by small and medium budgets with few blockbusters.\n"
+            "2. The mainstream budget is concentrated between $0-40M, with $10-20M typically being the densest range.\n"
+            "3. Movies with budgets over $80M are rare, representing high-cost blockbusters."
         )
 
-    # ── 图2：年度中位数预算趋势 ───────────────────────────────────────────
+    # ── Figure 2: Median Movie Budget Trend ───────────────────────────────────────────
     st.subheader("2. Median Movie Budget Trend (Since 1950)")
     budget_trend = (
         df_analysis.groupby("release_year", observed=False)
@@ -121,17 +116,17 @@ def render() -> None:
     st.pyplot(fig2)
     plt.close(fig2)
 
-    with st.expander("图表 2 解读：1950 年以来电影年度预算趋势", expanded=True):
+    with st.expander("Visuals Explanation", expanded=True):
         st.markdown(
-            "**图表目的**：展示 1950 年之后中位数制作预算的年度变化，反映长期成本演进。"
+            "**Purpose**: Show the annual change in median production budget since 1950, reflecting long-term cost evolution."
         )
         st.markdown(
-            "1. 中位数预算整体持续上升，电影制作成本门槛不断提高。\n"
-            "2. 2000 年后预算上涨加快，2010 年后增长更明显。\n"
-            "3. 局部波动受当年供给结构影响，但不改变长期上升趋势。"
+            "1. The median budget has been steadily increasing, indicating a rising threshold for movie production costs.\n"
+            "2. The budget increase accelerated after 2000, with more noticeable growth after 2010.\n"
+            "3. Local fluctuations are influenced by the supply structure of the year but do not change the long-term upward trend."
         )
 
-    # ── 图3：预算 vs 全球票房 相关性 ──────────────────────────────────────
+    # ── Figure 3: Budget vs Revenue Correlation ──────────────────────────────────────
     st.subheader("3. Budget vs Revenue Correlation")
     corr = df_analysis["budget_M"].corr(df_analysis["revenue_M"])
     fig3, ax3 = plt.subplots(figsize=(10, 6), dpi=100)
@@ -150,17 +145,17 @@ def render() -> None:
     st.pyplot(fig3)
     plt.close(fig3)
 
-    with st.expander("图表 3 解读：预算 vs 全球票房相关性", expanded=True):
+    with st.expander("Visuals Explanation", expanded=True):
         st.markdown(
-            "**图表目的**：量化预算与全球票房的线性关系，并用 95% 置信区间评估稳定性。"
+            "**Purpose**: Quantify the linear relationship between budget and global box office revenue, and assess stability using a 95% confidence interval."
         )
         st.markdown(
-            "1. 预算与票房呈显著正相关，整体符合“高投入高产出”的行业规律。\n"
-            "2. 回归线及其置信区间显示该关系具有统计稳定性。\n"
-            "3. 图中剔除了前 1% 极端值，结论更贴近主流电影样本。"
+            "1. Budget and revenue are significantly positively correlated, consistent with the industry rule of 'high investment, high return'.\n"
+            "2. The regression line and its confidence interval indicate statistical stability of this relationship.\n"
+            "3. The top 1% of extreme values are excluded, making the conclusion more representative of mainstream movie samples."
         )
 
-    # ── 图4：不同预算区间的票房表现 ───────────────────────────────────────
+    # ── Figure 4: Box Office Performance by Budget Tier ───────────────────────────────────────
     st.subheader("4. Box Office Performance by Budget Tier")
     budget_revenue_trend = (
         df_analysis.groupby("budget_bin", observed=False)
@@ -185,17 +180,17 @@ def render() -> None:
     st.pyplot(fig4)
     plt.close(fig4)
 
-    with st.expander("图表 4 解读：不同预算区间的票房表现", expanded=True):
+    with st.expander("Visuals Explanation", expanded=True):
         st.markdown(
-            "**图表目的**：对比不同预算层级的中位数/平均票房，观察预算投入的边际产出变化。"
+            "**Purpose**: Compare median/mean box office revenue across different budget tiers to observe the marginal returns of budget investment."
         )
         st.markdown(
-            "1. 随预算提升，中位数和平均票房总体上升，预算投入对票房有正向拉动。\n"
-            "2. 票房边际回报递减：低预算阶段每增加同等预算的拉动更明显，高预算阶段趋缓。\n"
-            "3. 平均值普遍高于中位数，说明区间内存在爆款拉高均值，头部效应明显。"
+            "1. As the budget increases, both median and mean box office revenue generally rise, indicating a positive impact of budget on revenue.\n"
+            "2. Diminishing marginal returns: In the low-budget stage, each additional budget increment has a more noticeable impact, while in the high-budget stage, the effect tapers off.\n"
+            "3. The mean is generally higher than the median, indicating the presence of blockbusters that elevate the mean, highlighting the head effect."
         )
 
-    # ── 图5：ROI 分布直方图 ───────────────────────────────────────────────
+    # ── Figure 5: ROI Distribution Histogram ───────────────────────────────────────────────
     st.subheader("5. Movie ROI Distribution")
     max_roi = df_analysis["ROI_pct"].quantile(0.95)
     min_roi = df_analysis["ROI_pct"].quantile(0.05)
@@ -221,18 +216,18 @@ def render() -> None:
     st.pyplot(fig5)
     plt.close(fig5)
 
-    with st.expander("图表 5 解读：电影投资回报率（ROI）分布", expanded=True):
+    with st.expander("Visuals Explanation", expanded=True):
         st.markdown(
-            "**图表目的**：展示行业 ROI 分布结构，识别盈亏平衡线两侧样本特征。"
+            "**Purpose**: Display the industry ROI distribution structure and identify sample characteristics on both sides of the break-even line."
         )
         st.markdown(
-            "1. ROI 呈右偏分布，少数爆款显著抬高整体均值。\n"
-            "2. 中位数 ROI 为正，说明过半电影可盈利；但均值明显高于中位数，盈利依赖头部。\n"
-            "3. 仍有可观比例电影 ROI 为负，行业投资风险客观存在。\n"
-            "4. 本图剔除前后 5% 极端 ROI，提升了主流样本可读性。"
+            "1. ROI is right-skewed, with a few blockbusters significantly raising the overall mean.\n"
+            "2. The median ROI is positive, indicating that more than half of the movies are profitable; however, the mean is significantly higher than the median, showing that profitability relies on the head.\n"
+            "3. A considerable proportion of movies still have negative ROI, indicating inherent investment risks in the industry.\n"
+            "4. The top and bottom 5% of extreme ROI values are excluded, improving the readability of mainstream samples."
         )
 
-    # ── 图6：不同预算区间中位数 ROI ───────────────────────────────────────
+    # ── Figure 6: Median ROI by Budget Tier ───────────────────────────────────────
     st.subheader("6. Median ROI by Budget Tier")
     budget_roi_trend = (
         df_analysis.groupby("budget_bin", observed=False)
@@ -278,12 +273,12 @@ def render() -> None:
         use_container_width=True,
     )
 
-    with st.expander("图表 6 解读：不同预算区间 ROI 排名与对比", expanded=True):
+    with st.expander("Visuals Explanation", expanded=True):
         st.markdown(
-            "**图表目的**：比较 10 个预算区间的 ROI 效率，识别高性价比预算带。"
+            "**Purpose**: Compare the ROI efficiency across 10 budget tiers and identify high cost-performance budget ranges."
         )
         st.markdown(
-            "1. ROI 与预算并非同向增长，低预算区间常见更高中位数 ROI。\n"
-            "2. 0-3000 万美元区间通常具有更高投资性价比。\n"
-            "3. 高预算区间中位数 ROI 往往更低，部分接近盈亏平衡，回报效率与风险压力更大。"
+            "1. ROI does not increase monotonically with budget; lower budget tiers often have higher median ROI.\n"
+            "2. The $0-30M budget range typically offers higher investment cost-performance.\n"
+            "3. High budget tiers tend to have lower median ROI, some approaching break-even, indicating higher risk and lower return efficiency."
         )

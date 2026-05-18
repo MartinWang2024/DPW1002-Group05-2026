@@ -1,9 +1,3 @@
-"""
-tabs/tab_index.py
-Tab: 数据概览
-整合「预算与票房」「评分关系」「国家分布」三个分析板块，用内部子标题分隔。
-"""
-
 import pandas as pd
 import plotly.express as px
 import streamlit as st
@@ -13,19 +7,19 @@ from data_loader import build_country_stats
 
 def render(movies_df: pd.DataFrame, rating_df: pd.DataFrame) -> None:
 
-    # ── 筛选控件（仅本 Tab 生效） ─────────────────────────────────────────
-    with st.expander("筛选条件", expanded=True):
+    # ── Filter Control ─────────────────────────────────────────
+    with st.expander("Filtering criteria", expanded=True):
         year_min = int(movies_df["release_year"].min())
         year_max = int(movies_df["release_year"].max())
         col_y, col_b = st.columns(2)
         with col_y:
             selected_years = st.slider(
-                "上映年份范围", min_value=year_min, max_value=year_max, value=(1980, year_max),
+                "Release Year Range", min_value=year_min, max_value=year_max, value=(1980, year_max),
                 key="idx_years",
             )
         with col_b:
             budget_cap = st.slider(
-                "预算上限 (M$)", min_value=10, max_value=500, value=120, step=10,
+                "Budget Cap (M$)", min_value=10, max_value=500, value=120, step=10,
                 key="idx_budget",
             )
 
@@ -35,17 +29,17 @@ def render(movies_df: pd.DataFrame, rating_df: pd.DataFrame) -> None:
         & (movies_df["budget_M"] <= budget_cap)
     ].copy()
 
-    # ── 指标卡 ────────────────────────────────────────────────────────────
+    # ── Metrics ────────────────────────────────────────────────────────────
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("电影数量", f"{len(filtered):,}")
-    c2.metric("预算中位数", f"${filtered['budget_M'].median():.1f}M")
-    c3.metric("票房中位数", f"${filtered['revenue_M'].median():.1f}M")
-    c4.metric("利润中位数", f"${filtered['profit_M'].median():.1f}M")
+    c1.metric("Movie Count", f"{len(filtered):,}")
+    c2.metric("Median Budget", f"${filtered['budget_M'].median():.1f}M")
+    c3.metric("Median Revenue", f"${filtered['revenue_M'].median():.1f}M")
+    c4.metric("Median Profit", f"${filtered['profit_M'].median():.1f}M")
 
     st.divider()
 
-    # ── 预算与票房 ────────────────────────────────────────────────────────
-    st.subheader("预算与票房")
+    # ── Budget vs Revenue ────────────────────────────────────────────────────────
+    st.subheader("Budget vs Revenue")
 
     left, right = st.columns(2)
     with left:
@@ -53,10 +47,11 @@ def render(movies_df: pd.DataFrame, rating_df: pd.DataFrame) -> None:
             filtered,
             x="budget_M",
             nbins=40,
-            title="预算分布 (Budget Distribution)",
+            title="Budget Distribution",
             labels={"budget_M": "Budget (M$)"},
         )
         st.plotly_chart(fig_hist, use_container_width=True)
+        st.caption("Note: The horizontal axis represents the budget (millions of US dollars), showing the distribution of movie budgets in the sample to help identify common budget ranges and tail values.")
 
     with right:
         trend = (
@@ -70,26 +65,28 @@ def render(movies_df: pd.DataFrame, rating_df: pd.DataFrame) -> None:
             x="release_year",
             y="median_budget_M",
             markers=True,
-            title="年度预算中位数趋势",
+            title="Median Budget Trend by Year",
             labels={"release_year": "Year", "median_budget_M": "Median Budget (M$)"},
         )
         st.plotly_chart(fig_trend, use_container_width=True)
+        st.caption("Note: Shows the median budget of movies each year, helping to observe the trend of budget changes over time (median reduces the impact of extreme values).")
 
     corr = filtered["budget_M"].corr(filtered["revenue_M"])
     fig_scatter = px.scatter(
         filtered,
         x="budget_M",
         y="revenue_M",
-        title=f"预算 vs 票房 (相关系数: {corr:.2f})",
+        title=f"Budget vs Revenue (Correlation: {corr:.2f})",
         labels={"budget_M": "Budget (M$)", "revenue_M": "Revenue (M$)"},
         opacity=0.5,
     )
     st.plotly_chart(fig_scatter, use_container_width=True)
+    st.caption("Note: The scatter plot shows the relationship between budget and revenue; the distribution of points and the correlation coefficient above reflect the strength of their linear association.")
 
     st.divider()
 
-    # ── 评分关系 ──────────────────────────────────────────────────────────
-    st.subheader("评分关系")
+    # ── Rating vs Revenue ──────────────────────────────────────────────────────────
+    st.subheader("Rating vs Revenue")
 
     rating_df = rating_df[
         (rating_df["avg_rating"] >= 0) & (rating_df["avg_rating"] <= 5)
@@ -100,7 +97,7 @@ def render(movies_df: pd.DataFrame, rating_df: pd.DataFrame) -> None:
         x="avg_rating",
         y="revenue_M",
         color="rating_count",
-        title="评分与票房关系",
+        title="Rating vs Revenue",
         labels={
             "avg_rating": "Average Rating",
             "revenue_M": "Revenue (M$)",
@@ -109,6 +106,7 @@ def render(movies_df: pd.DataFrame, rating_df: pd.DataFrame) -> None:
         opacity=0.45,
     )
     st.plotly_chart(fig_rating, use_container_width=True)
+    st.caption("Note: The horizontal axis represents the average rating (0–5), and the color indicates the rating count; this helps to observe the relationship between ratings and revenue, considering the sample weight.")
 
     pearson = rating_df["avg_rating"].corr(rating_df["revenue_M"], method="pearson")
     spearman = rating_df["avg_rating"].corr(rating_df["revenue_M"], method="spearman")
@@ -116,8 +114,8 @@ def render(movies_df: pd.DataFrame, rating_df: pd.DataFrame) -> None:
 
     st.divider()
 
-    # ── 国家分布 ──────────────────────────────────────────────────────────
-    st.subheader("国家分布")
+    # ── Country Distribution ──────────────────────────────────────────────────────────
+    st.subheader("Country Distribution")
 
     countries = build_country_stats(filtered)
     fig_country = px.bar(
@@ -130,4 +128,5 @@ def render(movies_df: pd.DataFrame, rating_df: pd.DataFrame) -> None:
     )
     fig_country.update_layout(yaxis={"categoryorder": "total ascending"})
     st.plotly_chart(fig_country, use_container_width=True)
+    st.caption("Note: The bar chart shows the distribution of countries by movie count; you can refer to the table below for specific counts and proportions.")
     st.dataframe(countries, use_container_width=True)

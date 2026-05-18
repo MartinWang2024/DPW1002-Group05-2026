@@ -1,9 +1,3 @@
-"""
-tabs/tab_keywords.py
-Tab: 关键词分析
-来源逻辑: analysis/movie_analysis.ipynb
-"""
-
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -14,28 +8,28 @@ from data_loader import load_box_office_full, load_keywords_data
 
 
 def render() -> None:
-    st.header("关键词分析 (Keyword Analysis)")
-    st.caption("数据来源: movies_metadata_box_office.csv + keywords_cleaned.csv")
+    st.header("Keyword Analysis")
+    st.caption("Data Sources: movies_metadata_box_office.csv + keywords_cleaned.csv")
 
     st.subheader("Core Insights")
     st.info(
-        "基于电影关键词与票房数据的交叉分析可以看出，不同题材设定之间存在明显的市场表现差异。"
-        "部分关键词不仅拥有更高的平均票房，也更容易产生头部爆款；而另一些关键词虽然均值较高，"
-        "但样本集中度强，解释时需要结合分布情况一起判断。"
+        "Cross-analysis of film keywords and box office data reveals significant differences in market performance among different themes and settings."
+        "Some keywords not only have higher average box office revenue but also are more likely to produce blockbuster hits; while other keywords, although having high averages, "
+        "have concentrated samples, and their interpretation needs to be considered in conjunction with the distribution."
     )
     col_a, col_b = st.columns(2)
     col_a.success(
-        "高票房关键词\n\n"
-        "平均票房排名靠前的关键词显示出显著的市场吸引力，说明特定故事设定会对商业表现产生明显拉动。"
+        "High Revenue Keywords\n\n"
+        "IP-related keywords have stable high revenue potential, such as space wars, fantasy, superheroes, etc. With sufficient samples, their box office performance is more robust, making them high-yield themes."
     )
     col_b.warning(
-        "均值之外看分布\n\n"
-        "仅看均值并不足够，箱线图能进一步区分是持续稳定高票房，还是由少数爆款或小样本抬高平均值。"
+        "High Popularity Keywords\n\n"
+        "High popularity keywords can significantly raise the box office ceiling. Quality theme tags can effectively boost box office expectations, and when combined with release timing, can further amplify revenue."
     )
 
     st.divider()
 
-    with st.spinner("加载数据中..."):
+    with st.spinner("Loading data..."):
         movies_df = load_box_office_full()
         keywords_df = load_keywords_data()
 
@@ -59,13 +53,13 @@ def render() -> None:
     filtered_df = merged_df[merged_df["keyword_name"].isin(top_keyword_names)].copy()
 
     c1, c2, c3 = st.columns(3)
-    c1.metric("有效样本", f"{len(merged_df):,}")
-    c2.metric("关键词数量", f"{keyword_revenue_df['keyword_name'].nunique():,}")
-    c3.metric("Top 关键词", top_keywords.iloc[0]["keyword_name"] if not top_keywords.empty else "N/A")
+    c1.metric("Valid Samples", f"{len(merged_df):,}")
+    c2.metric("Number of Keywords", f"{keyword_revenue_df['keyword_name'].nunique():,}")
+    c3.metric("Top Keyword", top_keywords.iloc[0]["keyword_name"] if not top_keywords.empty else "N/A")
 
     sns.set_theme(style="whitegrid", context="talk")
 
-    st.subheader("① 按关键词划分的平均票房 Top10")
+    st.subheader("1. Top 10 Keywords by Average Revenue")
     fig1, ax1 = plt.subplots(figsize=(14, 7), dpi=100)
     sns.barplot(
         data=top_keywords,
@@ -93,16 +87,16 @@ def render() -> None:
     st.pyplot(fig1, use_container_width=True)
     plt.close(fig1)
 
-    with st.expander("📊 图表解读：按关键词划分的平均票房 Top10", expanded=True):
+    with st.expander("Visuals Explanation", expanded=True):
         st.markdown(
-            "这张图展示了平均票房最高的 10 个电影关键词 / 题材，直观呈现了不同主题的市场表现差异。\n\n"
-            "1. 'anti war（反战）' 题材的电影平均票房遥遥领先，显著高于其他关键词，是最具票房潜力的主题。\n"
-            "2. 紧随其后的是 'steerage'、'rich woman - poor man（贫富恋）'、'salvage（救援）' 等题材，说明特定类型的故事设定对票房有较强的拉动作用，而 'mysterious woman（神秘女性）' 等题材的平均票房相对较低。"
+            "This chart shows the top 10 movie keywords/themes by average box office revenue, providing a clear view of market performance differences among different themes.\n\n"
+            "1. The 'anti war' theme leads in average box office revenue, significantly higher than other keywords, making it the most promising theme.\n"
+            "2. Following closely are themes like 'steerage', 'rich woman - poor man', 'salvage', indicating that specific story settings have a strong impact on box office performance, while themes like 'mysterious woman' have relatively lower average box office revenue."
         )
 
     st.divider()
 
-    st.subheader("② Top 关键词的票房分布")
+    st.subheader("2. Revenue Distribution of Top Keywords")
     fig2, ax2 = plt.subplots(figsize=(14, 7), dpi=100)
     sns.boxplot(
         data=filtered_df,
@@ -134,9 +128,9 @@ def render() -> None:
     st.pyplot(fig2, use_container_width=True)
     plt.close(fig2)
 
-    with st.expander("📊 图表解读：Top 关键词的票房分布", expanded=True):
+    with st.expander("Visuals Explanation", expanded=True):
         st.markdown(
-            "这张箱线图进一步展示了高票房关键词题材的票房分布情况，补充了均值之外的细节信息。\n\n"
-            "1. 'anti war（反战）' 和 'space war（太空战争）'、'power relations（权力关系）' 等题材的票房分布范围更广，且存在极高的上限值，说明这些题材不仅平均票房高，也更容易诞生票房爆款。\n"
-            "2. 相比之下，'rich woman - poor man（贫富恋）'、'steerage' 等题材的票房数据几乎是单一值，说明样本量较少或票房表现高度集中，数据的代表性较弱。"
+            "This boxplot further illustrates the revenue distribution of high-grossing keyword themes, providing additional details beyond the mean.\n\n"
+            "1. Themes like 'anti war', 'space war', and 'power relations' have a wider revenue distribution and extremely high upper limits, indicating that these themes not only have high average revenue but are also more likely to produce box office hits.\n"
+            "2. In contrast, themes like 'rich woman - poor man' and 'steerage' have almost singular revenue values, suggesting a smaller sample size or highly concentrated box office performance, making the data less representative."
         )

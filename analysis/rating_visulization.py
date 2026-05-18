@@ -82,6 +82,9 @@ def create_beautiful_visuals(movies_path, ratings_path):
     axes[1].set_ylim(0, 2000)
 
     plt.tight_layout()
+    output_filename = 'outputs/rating_visualization.png'
+    plt.savefig(output_filename, dpi=300, bbox_inches='tight')
+    print(f"Saved visualization to '{output_filename}'")
     plt.show()
 
 create_beautiful_visuals('cleaned_archive/movies_metadata_cleaned.csv', 'cleaned_archive/ratings_small_cleaned.csv')

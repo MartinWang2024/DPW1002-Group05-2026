@@ -1,13 +1,8 @@
-"""
-tabs/tab_country.py
-Tab: 国家分析
-来源逻辑: analysis/Data_A&V_country.py
-"""
-
 import ast
 
 import matplotlib.pyplot as plt
 import seaborn as sns
+import pandas as pd
 import streamlit as st
 from matplotlib.ticker import FuncFormatter
 
@@ -23,8 +18,8 @@ def _clean_list(s) -> list:
 
 
 def render() -> None:
-    st.header("国家分析 (Country Analysis)")
-    st.caption("数据来源: movies_metadata_box_office.csv")
+    st.header("Country Analysis")
+    st.caption("Data Source: movies_metadata_box_office.csv")
 
     # ── Core Insights ─────────────────────────────────────────
     st.subheader("Core Insights")
@@ -54,14 +49,14 @@ def render() -> None:
 
     st.divider()
 
-    with st.spinner("加载数据中..."):
+    with st.spinner("Loading data..."):
         df = load_box_office_full()
 
     df["countries_clean"] = df["production_countries_list"].apply(_clean_list)
     df_c = df.explode("countries_clean").dropna(subset=["countries_clean"])
     df_c = df_c[df_c["countries_clean"].astype(str).str.strip() != ""]
 
-    # ── 统计 ──────────────────────────────────────────────────────────────
+    # ── Statistics ──────────────────────────────────────────────────────────────
     top_countries_count = df_c["countries_clean"].value_counts().head(10)
 
     top_countries_profit = (
@@ -82,7 +77,14 @@ def render() -> None:
         .head(10)
     )
 
-    # ── 配色 ──────────────────────────────────────────────────────────────
+    # ── Data Panel ────────────────────────────────────────────────────────────
+    st.subheader("Country Statistics")
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Unique Countries", f"{df_c['countries_clean'].nunique():,}")
+    col2.metric("Total Movies", f"{df_c['id'].nunique():,}")
+    col3.metric("Average Profit per Movie", f"${df_c['profit'].mean():,.0f}")
+
+    # ── Color ──────────────────────────────────────────────────────────────
     color_count = sns.color_palette("ch:s=-.2,r=.6", 10)[::-1]
     color_profit = sns.color_palette("mako", 10)[::-1]
     color_avg = sns.color_palette("flare", 10)[::-1]
@@ -95,9 +97,9 @@ def render() -> None:
 
     sns.set_theme(style="ticks", rc={"axes.facecolor": "#FFFFFF", "figure.facecolor": "#FFFFFF"})
 
-    # ── 三连图 ────────────────────────────────────────────────────────────
-    # ── 图1: 发片数量 ─────────────────────────────────────────────────────
-    st.subheader("Top 10 Countries by Movie Count")
+    # ── Three Charts ────────────────────────────────────────────────────────────
+    # ── Chart 1: Movie Count ─────────────────────────────────────────────────────
+    st.subheader("1. Top 10 Countries by Movie Count")
     fig1, ax1 = plt.subplots(figsize=(14, 7))
     sns.barplot(ax=ax1, x=top_countries_count.values, y=top_countries_count.index,
                 palette=color_count, edgecolor="black", linewidth=0.5)
@@ -114,9 +116,8 @@ def render() -> None:
     st.pyplot(fig1, use_container_width=True)
     plt.close(fig1)
 
-    with st.expander("📊 图表解读：发片数量", expanded=True):
+    with st.expander("Visuals Explanation", expanded=True):
         st.markdown(
-            "Movie Count (发片数量)\n\n"
             "This bar chart illustrates absolute production volume across the top 10 countries. "
             "The top bar for the United States is dramatically longer than the rest "
             "(nearly 7× that of the UK), visually highlighting its unmatched production capacity "
@@ -125,8 +126,8 @@ def render() -> None:
 
     st.divider()
 
-    # ── 图2: 总利润 ───────────────────────────────────────────────────────
-    st.subheader("Top 10 Countries by Total Profit")
+    # ── Chart 2: Total Profit ───────────────────────────────────────────────────────
+    st.subheader("2. Top 10 Countries by Total Profit")
     fig2, ax2 = plt.subplots(figsize=(14, 7))
     sns.barplot(ax=ax2, x=top_countries_profit.values, y=top_countries_profit.index,
                 palette=color_profit, edgecolor="black", linewidth=0.5)
@@ -157,8 +158,8 @@ def render() -> None:
 
     st.divider()
 
-    # ── 图3: 平均利润 ─────────────────────────────────────────────────────
-    st.subheader("Top 10 Countries by Average Profit (Min. 20 Movies)")
+    # ── Chart 3: Average Profit ─────────────────────────────────────────────────────
+    st.subheader("3. Top 10 Countries by Average Profit (Min. 20 Movies)")
     fig3, ax3 = plt.subplots(figsize=(14, 7))
     sns.barplot(ax=ax3, x=top_countries_avg_profit["avg_profit"].values, y=top_countries_avg_profit.index,
                 palette=color_avg, edgecolor="black", linewidth=0.5)
@@ -176,9 +177,8 @@ def render() -> None:
     st.pyplot(fig3, use_container_width=True)
     plt.close(fig3)
 
-    with st.expander("📊 图表解读：平均利润 (ROI)", expanded=True):
+    with st.expander("Visuals Explanation", expanded=True):
         st.markdown(
-            "Average Profit (平均利润, min. 20 films)\n\n"
             "The most crucial chart for understanding ROI efficiency. By filtering for "
             "countries with significant output (≥ 20 films), the focus shifts from sheer "
             "volume to per-film profitability.\n\n"

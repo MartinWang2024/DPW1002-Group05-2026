@@ -1,11 +1,3 @@
-"""
-交叉分析：类型 × 预算 × 语言
-三步：
-  Step 1 - 类型 × 盈利率 & 中位ROI
-  Step 2 - 预算分层 × 类型 盈利率热力图
-  Step 3 - 语言组 × 类型 盈利率对比
-"""
-
 import pandas as pd
 import numpy as np
 import ast
@@ -14,10 +6,11 @@ import matplotlib.gridspec as gridspec
 import seaborn as sns
 import warnings
 warnings.filterwarnings('ignore')
+from pathlib import Path
 
-# ── 数据准备 ────────────────────────────────────────────────
+# ── Ready Data ────────────────────────────────────────────────
 df = pd.read_csv(
-    '/home/claude/dpw_project/DPW_project_dataAnalsis_rating_and_revenue/movies_metadata_cleaned.csv',
+    'cleaned_archive//movies_metadata_cleaned.csv',
     low_memory=False)
 df = df[(df['budget'] > 0) & (df['revenue'] > 0)].copy()
 df['profitable'] = (df['revenue'] > df['budget']).astype(int)
@@ -41,7 +34,7 @@ df['lang_group'] = df['original_language'].apply(
     else ('Asian' if x in ['hi','ja','zh','ko','ta']
     else ('European' if x in ['fr','es','it','de','ru'] else 'Other')))
 
-# 展开类型行
+# Expand genre rows
 rows = []
 for _, row in df.iterrows():
     for g in row['genres_parsed']:
@@ -53,7 +46,7 @@ for _, row in df.iterrows():
                          'budget': row['budget']})
 gdf = pd.DataFrame(rows)
 
-# ── 配色系统 ─────────────────────────────────────────────────
+# ── Color System ─────────────────────────────────────────────────
 PALETTE   = '#4C72B0'
 GREEN     = '#55A868'
 RED       = '#C44E52'
@@ -68,7 +61,7 @@ fig = plt.figure(figsize=(22, 20))
 gs  = gridspec.GridSpec(3, 2, figure=fig, hspace=0.52, wspace=0.38)
 
 # ════════════════════════════════════════════════════════════
-# STEP 1A — 各类型盈利率 (按盈利率降序)
+# STEP 1A — Profitability Rate by Genre (sorted by profit rate)
 # ════════════════════════════════════════════════════════════
 ax1a = fig.add_subplot(gs[0, 0])
 
@@ -93,7 +86,7 @@ for bar, val in zip(bars, genre_profit['profit_rate']):
 ax1a.legend(fontsize=10)
 
 # ════════════════════════════════════════════════════════════
-# STEP 1B — 各类型中位ROI（截断到500%）
+# STEP 1B — Median ROI by Genre (clipped at 500%)
 # ════════════════════════════════════════════════════════════
 ax1b = fig.add_subplot(gs[0, 1])
 
@@ -101,7 +94,7 @@ genre_roi = (gdf.groupby('genre')['roi']
              .median()
              .reset_index()
              .rename(columns={'roi':'median_roi'}))
-# 按 Step1A 的盈利率顺序排列
+# Sort by Step1A profitability rate order
 genre_roi = genre_roi.set_index('genre').loc[genre_profit['genre']].reset_index()
 genre_roi['median_roi_pct'] = genre_roi['median_roi'] * 100
 
@@ -117,7 +110,7 @@ for bar, val in zip(bars2, genre_roi['median_roi_pct']):
               f'{val:.0f}%', va='center', fontsize=11)
 
 # ════════════════════════════════════════════════════════════
-# STEP 2 — 预算分层 × 类型 盈利率热力图
+# STEP 2 — Profitability Rate Heatmap: Genre × Budget Tier
 # ════════════════════════════════════════════════════════════
 ax2 = fig.add_subplot(gs[1, :])
 
@@ -150,7 +143,7 @@ ax2.tick_params(axis='x', rotation=0, labelsize=11)
 ax2.tick_params(axis='y', labelsize=11)
 
 # ════════════════════════════════════════════════════════════
-# STEP 3A — 语言组 × 盈利率总览
+# STEP 3A — Profitability Rate by Language Group
 # ════════════════════════════════════════════════════════════
 ax3a = fig.add_subplot(gs[2, 0])
 
@@ -175,7 +168,7 @@ for bar, row in zip(bars3, lang_profit.itertuples()):
               f'{row.profit_rate:.1%}\n(n={row.n})', ha='center', fontsize=11)
 
 # ════════════════════════════════════════════════════════════
-# STEP 3B — English vs Non-English 各类型盈利率对比
+# STEP 3B — English vs Non-English Profitability Rate by Genre
 # ════════════════════════════════════════════════════════════
 ax3b = fig.add_subplot(gs[2, 1])
 
@@ -186,13 +179,13 @@ lang_genre = (gdf.groupby(['genre','is_english'])['profitable']
 lang_genre.columns = ['genre','is_english','profit_rate','n']
 lang_genre = lang_genre[lang_genre['n'] >= 10]
 
-# 只画有两组都存在的类型
+# Only plot genres with both groups present
 genres_both = lang_genre.groupby('genre')['is_english'].nunique()
 genres_both = genres_both[genres_both == 2].index.tolist()
 plot_df = lang_genre[lang_genre['genre'].isin(genres_both)].copy()
 plot_df['Language'] = plot_df['is_english'].map({True:'English', False:'Non-English'})
 
-# 按英语盈利率排序
+# Sort by English profitability rate
 order = (plot_df[plot_df['Language']=='English']
          .sort_values('profit_rate', ascending=False)['genre'].tolist())
 
@@ -207,37 +200,40 @@ ax3b.set_title('Step 3B  |  English vs Non-English by Genre',
                fontweight='bold', pad=10)
 ax3b.legend(loc='lower right', fontsize=10)
 
-# ── 总标题 ──────────────────────────────────────────────────
+# ── Overall Title ──────────────────────────────────────────────────
 fig.suptitle('Cross Analysis: Genre × Budget Tier × Language',
              fontsize=18, fontweight='bold', y=1.01)
 
-plt.savefig('/mnt/user-data/outputs/cross_analysis.png',
-            dpi=180, bbox_inches='tight', facecolor='white')
-print("✅ Saved cross_analysis.png")
+# Ensure local outputs directory exists and save there (works on Windows)
+OUT_DIR = Path(__file__).resolve().parents[1] / 'outputs'
+OUT_DIR.mkdir(parents=True, exist_ok=True)
+out_path = OUT_DIR / 'cross_analysis.png'
+plt.savefig(out_path.as_posix(), dpi=180, bbox_inches='tight', facecolor='white')
+print(f"✅ Saved {out_path}")
 
-# ── 打印关键结论 ─────────────────────────────────────────────
+# ── Print Key Findings ─────────────────────────────────────────────
 print("\n" + "="*60)
 print("KEY FINDINGS")
 print("="*60)
 
-print("\n[Step 1] 盈利率最高类型 Top 3:")
+print("\n[Step 1] Top 3 Genres by Profitability Rate:")
 top3 = genre_profit.tail(3)[::-1]
 for _, r in top3.iterrows():
     roi_val = genre_roi[genre_roi['genre']==r['genre']]['median_roi_pct'].values[0]
-    print(f"  {r['genre']:<18} 盈利率={r['profit_rate']:.1%}  中位ROI={roi_val:.0f}%")
+    print(f"  {r['genre']:<18} Profitability Rate={r['profit_rate']:.1%}  Median ROI={roi_val:.0f}%")
 
-print("\n[Step 1] 盈利率最低类型 Bottom 3:")
+print("\n[Step 1] Bottom 3 Genres by Profitability Rate:")
 bot3 = genre_profit.head(3)
 for _, r in bot3.iterrows():
     roi_val = genre_roi[genre_roi['genre']==r['genre']]['median_roi_pct'].values[0]
-    print(f"  {r['genre']:<18} 盈利率={r['profit_rate']:.1%}  中位ROI={roi_val:.0f}%")
+    print(f"  {r['genre']:<18} Profitability Rate={r['profit_rate']:.1%}  Median ROI={roi_val:.0f}%")
 
-print("\n[Step 2] 热力图亮点（盈利率>85%）:")
+print("\n[Step 2] Heatmap Highlights (Profitability Rate > 85%):")
 high_cells = pivot[pivot['profit_rate'] >= 0.85][['genre','budget_tier','profit_rate','n']]
 for _, r in high_cells.iterrows():
     print(f"  {r['genre']:<18} × {r['budget_tier']:<20} = {r['profit_rate']:.1%}  (n={r['n']})")
 
-print("\n[Step 3] 语言组盈利率:")
+print("\n[Step 3] Profitability Rate by Language Group:")
 for _, r in lang_profit.iterrows():
     print(f"  {r['lang_group']:<12} {r['profit_rate']:.1%}  (n={r['n']})")
-EOF
+

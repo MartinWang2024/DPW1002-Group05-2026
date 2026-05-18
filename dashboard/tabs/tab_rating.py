@@ -1,10 +1,3 @@
-"""
-tabs/tab_rating.py
-Tab: 评分分析 + 相关性分析（Pearson / Spearman）
-来源逻辑: analysis/main.py + analysis/main_visulization.py
-         analysis/pearson_and_spearman.py + pearson_and_spearman_visulization.py
-"""
-
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -15,34 +8,34 @@ from data_loader import load_rating_data
 
 
 def render() -> None:
-    st.header("评分分析 (Rating Tier Analysis)")
-    st.caption("数据来源: movies_metadata_cleaned.csv + ratings_small_cleaned.csv")
+    st.header("Rating Analysis")
+    st.caption("Data source: movies_metadata_cleaned.csv + ratings_small_cleaned.csv")
 
     # ── 核心发现 ──────────────────────────────────────────────────────────
     st.subheader("Core Insights")
     st.info(
-        "通过对 **1203 部**有效电影样本的分析，我们得到了一个相当反直觉的结论："
-        "**\u201c叫好\u201d并不等于\u201c叫座\u201d**。"
+        "Based on an analysis of **1,203 valid movie samples**, we reached a fairly counterintuitive conclusion: "
+        "**critical acclaim does not necessarily translate into box office success**."
     )
     col_a, col_b, col_c = st.columns(3)
     col_a.error(
-        "**相关性极低**\n\n"
-        "Pearson 与 Spearman 相关系数均约 **−0.01**，\n"
-        "评分高低与票房收入几乎没有任何统计关联。"
+        "**Extremely Low Correlation**\n\n"
+        "Both Pearson and Spearman correlation coefficients are approximately **−0.01**,\n"
+        "indicating almost no statistical relationship between ratings and box office revenue."
     )
     col_b.warning(
-        "**评分倒挂现象**\n\n"
-        "低分电影（<3.0）的平均票房与中位数票房，\n"
-        "反而**高于**高分电影（>4.0）。"
+        "**Rating Reversal Phenomenon**\n\n"
+        "Movies with low ratings (<3.0) have average and median box office revenues\n"
+        "that are actually **higher** than those of highly rated movies (>4.0)."
     )
     col_c.success(
-        "**爆款逻辑**\n\n"
-        "票房超 3.3 亿美元的\u201c超级爆款\u201d平均评分（3.30），\n"
-        "甚至略低于普通电影（3.34）。"
+        "**Blockbuster Logic**\n\n"
+        "Movies with box office revenue exceeding $330M have an average rating of 3.30,\n"
+        "which is slightly lower than that of regular movies (3.34)."
     )
     st.divider()
 
-    with st.spinner("加载数据中..."):
+    with st.spinner("Loading data..."):
         df = load_rating_data()
 
     df = df[(df["avg_rating"] >= 0) & (df["avg_rating"] <= 5)].copy()
@@ -50,7 +43,7 @@ def render() -> None:
     df = df[df["revenue"] > 0].copy()
     df["revenue_m"] = df["revenue"] / 1_000_000
 
-    # ── 评分分层 ──────────────────────────────────────────────────────────
+    # ── Rating Tiers ──────────────────────────────────────────────────────────
     bins = [0, 2.999, 3.999, 5.01]
     labels = ["Low (<3.0)", "Medium (3.0-4.0)", "High (>4.0)"]
     df["rating_tier"] = pd.cut(df["avg_rating"], bins=bins, labels=labels)
@@ -61,7 +54,7 @@ def render() -> None:
         .reset_index()
     )
 
-    # ── 异常值分析 ────────────────────────────────────────────────────────
+    # ── Outlier Analysis ────────────────────────────────────────────────────────
     Q1, Q3 = df["revenue"].quantile(0.25), df["revenue"].quantile(0.75)
     upper = Q3 + 1.5 * (Q3 - Q1)
     blockbusters = df[df["revenue"] > upper]
@@ -73,39 +66,39 @@ def render() -> None:
     top5["Revenue ($M)"] = top5["Revenue ($M)"].round(1)
     top5["Avg Rating"] = top5["Avg Rating"].round(2)
 
-    # ── 统计摘要 ──────────────────────────────────────────────────────────
+    # ── Statistical Summary ──────────────────────────────────────────────────────────
     col1, col2, col3 = st.columns(3)
-    col1.metric("有效样本", f"{len(df):,}")
+    col1.metric("Valid Samples", f"{len(df):,}")
     col2.metric(
-        f"大片 (>{upper / 1e6:.0f}M$)",
+        f"Blockbusters (>{upper / 1e6:.0f}M$)",
         f"{len(blockbusters):,}",
-        f"均评 {blockbusters['avg_rating'].mean():.2f}",
+        f"Avg Rating {blockbusters['avg_rating'].mean():.2f}",
     )
     col3.metric(
-        "普通电影",
+        "Regular Movies",
         f"{len(normal):,}",
-        f"均评 {normal['avg_rating'].mean():.2f}",
+        f"Avg Rating {normal['avg_rating'].mean():.2f}",
     )
 
-    st.subheader("评分分层统计")
+    st.subheader("Rating Tier Statistics")
     st.dataframe(
         tier_stats.rename(columns={
-            "rating_tier": "评分层",
-            "avg_revenue": "平均票房 ($M)",
-            "median_revenue": "中位票房 ($M)",
-            "movie_count": "电影数量",
-        }).style.format({"平均票房 ($M)": "{:.1f}", "中位票房 ($M)": "{:.1f}"}),
+            "rating_tier": "Rating Tier",
+            "avg_revenue": "Average Revenue ($M)",
+            "median_revenue": "Median Revenue ($M)",
+            "movie_count": "Movie Count",
+        }).style.format({"Average Revenue ($M)": "{:.1f}", "Median Revenue ($M)": "{:.1f}"}),
         use_container_width=True,
     )
 
-    st.subheader("Top 5 票房电影")
+    st.subheader("Top 5 Box Office Movies")
     st.dataframe(top5, use_container_width=True)
 
-    # ── 可视化 ────────────────────────────────────────────────────────────
+    # ── Visualization ────────────────────────────────────────────────────────────
     sns.set_theme(style="whitegrid", context="talk")
     fig, axes = plt.subplots(1, 2, figsize=(16, 7), dpi=100)
 
-    # 左图：均值 & 中位数柱状图
+    # Left Plot: Mean & Median Bar Chart
     melted = tier_stats.melt(
         id_vars="rating_tier",
         value_vars=["avg_revenue", "median_revenue"],
@@ -130,7 +123,7 @@ def render() -> None:
                 textcoords="offset points", fontsize=10,
             )
 
-    # 右图：箱线图 + 散点
+    # Right Plot: Boxplot + Scatter
     sns.boxplot(
         x="rating_tier", y="revenue_m", data=df,
         palette="pastel", showfliers=False, ax=axes[1],
@@ -148,48 +141,48 @@ def render() -> None:
     st.pyplot(fig)
     plt.close(fig)
 
-    # ── 第一组图表解读 ────────────────────────────────────────────────────
-    with st.expander("📊 第一组图表解读：分层对比图（柱状图 & 箱线图）", expanded=True):
+    # ── First Set of Chart Interpretations ────────────────────────────────────────────────────
+    with st.expander("Visuals Explanation", expanded=True):
         col_l, col_r = st.columns(2)
         with col_l:
             st.markdown(
-                "**左图（柱状图）：** 展示了低、中、高三个评分段的平均和中位数票房。"
-                "最左侧的\u201c低分段\u201d柱子最高，说明市场上的商业大片往往评分并不高，但吸金能力最强。"
+                "**Left Chart (Bar):** Shows the average and median box office revenue for low, medium, and high rating tiers."
+                " The tallest bar on the left indicates that blockbuster movies often have lower ratings but higher revenue."
             )
         with col_r:
             st.markdown(
-                "**右图（箱线图 + 散点图）：** 箱子代表大部分电影票房都在低位徘徊。"
-                "上方的红点（离群点）代表《泰坦尼克号》等超级爆款——无论评分高低，每个阶段都有红点飞得极高，"
-                "说明**爆款的产生具有随机性，并不依赖高评分**。"
+                "**Right Chart (Boxplot + Scatter):** The boxes represent the majority of movie revenues staying low."
+                " The red dots above (outliers) represent super blockbusters like 'Titanic' — regardless of rating, each tier has red dots flying high,"
+                " indicating that **the occurrence of blockbusters is random and not dependent on high ratings**."
             )
 
     # ══════════════════════════════════════════════════════════════════════
-    # 相关性分析 (Pearson & Spearman)
+    # Correlation Analysis (Pearson & Spearman)
     # ══════════════════════════════════════════════════════════════════════
     st.divider()
-    st.subheader("相关性分析 (Pearson & Spearman)")
+    st.subheader("Correlation Analysis (Pearson & Spearman)")
 
     corr_pearson, p_pearson = stats.pearsonr(df["avg_rating"], df["revenue_m"])
     corr_spearman, p_spearman = stats.spearmanr(df["avg_rating"], df["revenue_m"])
 
     c1, c2, c3 = st.columns(3)
-    c1.metric("有效样本", f"{len(df):,}")
+    c1.metric("Sample Size", f"{len(df):,}")
     c2.metric("Pearson r", f"{corr_pearson:.4f}", f"p = {p_pearson:.4f}")
     c3.metric("Spearman ρ", f"{corr_spearman:.4f}", f"p = {p_spearman:.4f}")
 
-    with st.expander("相关系数含义说明"):
+    with st.expander("Correlation Coefficients Explanation"):
         st.markdown(
             """
-- **Pearson r**：衡量线性相关，接近 0 表示评分与票房不存在线性规律。  
-- **Spearman ρ**：衡量单调秩相关，不依赖正态分布假设，更鲁棒。  
-- p-value < 0.05 表示结果在统计上显著。
+- **Pearson r**: Measures linear correlation. Close to 0 indicates no linear relationship between rating and box office.  
+- **Spearman ρ**: Measures monotonic rank correlation, more robust as it doesn't assume normal distribution.  
+- p-value < 0.05 indicates statistical significance.
 """
         )
 
     fig2, axes2 = plt.subplots(1, 2, figsize=(16, 7), dpi=100)
     props = dict(boxstyle="round", facecolor="wheat", alpha=0.5)
 
-    # 左图：Pearson 线性回归
+    # Left Plot: Pearson Linear Regression
     sns.regplot(
         x="avg_rating", y="revenue_m", data=df, ax=axes2[0],
         scatter_kws={"alpha": 0.35, "color": "#4C72B0", "s": 25},
@@ -206,7 +199,7 @@ def render() -> None:
         verticalalignment="top", bbox=props,
     )
 
-    # 右图：Spearman 分位数趋势
+    # Right Plot: Spearman Quantile Trend
     df["rating_quantile"] = pd.qcut(df["avg_rating"], q=10, duplicates="drop")
     q_stats = (
         df.groupby("rating_quantile", observed=False)["revenue_m"]
@@ -240,17 +233,17 @@ def render() -> None:
     st.pyplot(fig2)
     plt.close(fig2)
 
-    # ── 第二组图表解读 ────────────────────────────────────────────────────
-    with st.expander("📊 第二组图表解读：相关性深度分析（Pearson & Spearman）", expanded=True):
+    # ── Interpretation of the Second Set of Charts ────────────────────────────────────────────────────
+    with st.expander("Visuals Explanation", expanded=True):
         col_l2, col_r2 = st.columns(2)
         with col_l2:
             st.markdown(
-                "**左图（Pearson 线性拟合）：** 中间那条红色的拟合线几乎是**水平的**。"
-                "如果评分越高票房越高，线应向右上方倾斜。"
-                "平直的线说明：评分增加，票房并不会随之增加。"
+                "**Left Chart (Pearson Linear Fit):** The red fit line in the middle is almost **horizontal**."
+                " If higher ratings led to higher box office, the line should slope upwards to the right."
+                " The flat line indicates that increasing ratings do not correspond to higher box office."
             )
         with col_r2:
             st.markdown(
-                "**右图（Spearman 等级趋势）：** 绿色折线代表随评分上升的票房中位数走势。"
-                "折线起伏不定，甚至在高分段出现下滑，进一步证明**\u201c高排名评分\u201d并不能带来\u201c高排名票房\u201d**。"
+                "**Right Chart (Spearman Rank Trend):** The green line represents the median revenue trend as ratings increase."
+                " The line fluctuates and even declines in the high-rating segment, further confirming that **\u201chigh ratings\u201d do not necessarily lead to \u201chigh box office\u201d**."
             )

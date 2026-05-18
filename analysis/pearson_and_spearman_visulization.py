@@ -95,6 +95,9 @@ def visualize_correlations(movies_path, ratings_path):
             verticalalignment='top', bbox=props)
 
     plt.tight_layout()
+    output_filename = 'outputs/pearson_spearman.png'
+    plt.savefig(output_filename, dpi=300, bbox_inches='tight')
+    print(f"Saved visualization to '{output_filename}'")
     plt.show()
 
 visualize_correlations('cleaned_archive/movies_metadata_cleaned.csv', 'cleaned_archive/ratings_small_cleaned.csv')

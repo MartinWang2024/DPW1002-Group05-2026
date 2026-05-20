@@ -2,6 +2,15 @@
 
 DPW1002 Group Project (Group 05, 2026) — A comprehensive movie data analysis platform built on the TMDB MovieLens dataset, featuring data cleaning, statistical analysis, machine learning, and an interactive Streamlit dashboard.
 
+## Tech Stack
+
+- **Python 3.14**
+- **Data processing**: pandas, numpy
+- **Visualization**: matplotlib, seaborn, plotly
+- **Dashboard**: Streamlit
+- **Machine Learning**: scikit-learn (LogisticRegression, RandomForestClassifier)
+- **Notebooks**: Jupyter
+
 ## Dataset
 
 This project uses the [TMDB MovieLens dataset](https://www.kaggle.com/datasets/rounakbanik/the-movies-dataset), which contains metadata for 45,000 movies released on or before July 2017, including:
@@ -57,37 +66,44 @@ See [Dataset.md](Dataset.md) for full dataset documentation.
 ## Features
 
 ### Data Cleaning
+
 Scripts that parse JSON-like string fields, handle missing values, normalize formats, and produce analysis-ready CSVs.
 
 ### Statistical Analysis
-- **Correlation analysis**: Pearson and Spearman coefficients between rating, budget, revenue, and other features
+
+- **\**
 - **Rating analysis**: Distribution patterns, vote count vs. vote average relationships
 - **Country analysis**: Geographic distribution of movie production
 - **People analysis**: Actor/director impact on movie performance
 - **Budget analysis**: Trends, ROI profiling, and profitability patterns
+- **Release & keywords analysis**: Temporal release patterns and plot keyword impact
 
 ### Cross Analysis
+
 Multi-dimensional analysis examining profitability across combinations of genre, budget tier, and language group, with heatmap visualization.
 
 ### Machine Learning
+
 Trains Logistic Regression and Random Forest classifiers to predict movie profitability (revenue > budget) using pre-release features:
+
 - **Features**: log-budget, runtime, release year, genres, language, collection membership
 - **Avoids data leakage**: Post-release signals (vote_count, popularity) are excluded
 - **Key results**: Random Forest achieves ROC-AUC ~0.85
 
 ### Interactive Dashboard
+
 An 8-tab Streamlit app providing interactive charts and filters:
 
-| Tab | Description |
-|-----|-------------|
-| Data Overview | Budget/revenue/rating distributions, country breakdown |
-| Country Analysis | Geographic production patterns |
-| Release Date Analysis | Temporal trends in movie releases |
-| Keyword Analysis | Plot keyword frequency & impact |
-| Actors & Directors | Cast/crew influence on performance |
-| Rating Analysis | Correlations between ratings and revenue |
-| Budget Analysis | Budget trends, ROI, and profitability |
-| Machine Learning | LR vs RF model comparison, feature importance |
+| Tab                   | Description                                            |
+| --------------------- | ------------------------------------------------------ |
+| Data Overview         | Budget/revenue/rating distributions, country breakdown |
+| Country Analysis      | Geographic production patterns                         |
+| Release Date Analysis | Temporal trends in movie releases                      |
+| Keyword Analysis      | Plot keyword frequency & impact                        |
+| Actors & Directors    | Cast/crew influence on performance                     |
+| Rating Analysis       | Correlations between ratings and revenue               |
+| Budget Analysis       | Budget trends, ROI, and profitability                  |
+| Machine Learning      | LR vs RF model comparison, feature importance          |
 
 ## Quick Start
 
@@ -106,6 +122,7 @@ pip install -r dashboard/requirements-dashboard.txt
 ```
 
 Additional dependencies needed for analysis and ML scripts:
+
 ```bash
 pip install matplotlib seaborn scikit-learn scipy jupyter
 ```
@@ -131,15 +148,15 @@ python cross_analysis/cross_analysis.py
 python regression_model/profitability_model.py
 ```
 
-## Tech Stack
-
-- **Python 3.14**
-- **Data processing**: pandas, numpy
-- **Visualization**: matplotlib, seaborn, plotly
-- **Dashboard**: Streamlit
-- **Machine Learning**: scikit-learn (LogisticRegression, RandomForestClassifier)
-- **Notebooks**: Jupyter
-
 ## Team
+
+| Member | Contribution |
+|--------|-------------|
+| 1.     |             |
+| 2.     |             |
+| 3.     |             |
+| 4.     |             |
+| 5.     |             |
+| 6.     |             |
 
 DPW1002 Group 05, 2026

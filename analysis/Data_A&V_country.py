@@ -45,6 +45,7 @@ top_countries_avg_profit = country_stats[country_stats['movie_count'] >= 20].sor
 # 3. Generate Academic-Style Triple Charts (1x3 Layout)
 # ==========================================
 plt.style.use('default')
+# Set white background close to academic standards
 sns.set_theme(style="ticks", rc={"axes.facecolor": "#FFFFFF", "figure.facecolor": "#FFFFFF"})
 plt.rcParams['font.family'] = 'sans-serif'
 plt.rcParams['font.sans-serif'] = ['Helvetica', 'Arial', 'DejaVu Sans']
@@ -66,7 +67,8 @@ def million_fmt(x, pos):
 # ------------------------------------------
 # Left Chart (Chart 1): Movie Count
 # ------------------------------------------
-sns.barplot(ax=axes[0], x=top_countries_count.values, y=top_countries_count.index, 
+sns.barplot(ax=axes[0], x=top_countries_count.values, y=top_countries_count.index,
+            hue=top_countries_count.index, legend=False,
             palette=color_count, edgecolor="black", linewidth=0.5)
 axes[0].set_title('Top 10 Countries by Movie Count', fontsize=18, fontweight='bold', pad=15)
 axes[0].set_xlabel('Number of Movies', fontsize=14, fontweight='medium')
@@ -79,7 +81,8 @@ for i, v in enumerate(top_countries_count.values):
 # ------------------------------------------
 # Middle Chart (Chart 2): Total Profit
 # ------------------------------------------
-sns.barplot(ax=axes[1], x=top_countries_profit.values, y=top_countries_profit.index, 
+sns.barplot(ax=axes[1], x=top_countries_profit.values, y=top_countries_profit.index,
+            hue=top_countries_profit.index, legend=False,
             palette=color_profit, edgecolor="black", linewidth=0.5)
 axes[1].set_title('Top 10 Countries by Total Profit', fontsize=18, fontweight='bold', pad=15)
 axes[1].set_xlabel('Total Profit (USD)', fontsize=14, fontweight='medium')
@@ -93,7 +96,8 @@ for i, v in enumerate(top_countries_profit.values):
 # ------------------------------------------
 # Right Chart (Chart 3): Average Profit (Min. 20 Movies)
 # ------------------------------------------
-sns.barplot(ax=axes[2], x=top_countries_avg_profit['avg_profit'].values, y=top_countries_avg_profit.index, 
+sns.barplot(ax=axes[2], x=top_countries_avg_profit['avg_profit'].values, y=top_countries_avg_profit.index,
+            hue=top_countries_avg_profit.index, legend=False,
             palette=color_avg, edgecolor="black", linewidth=0.5)
 axes[2].set_title('Top 10 Countries by Average Profit\n(Min. 20 Movies)', fontsize=18, fontweight='bold', pad=15)
 axes[2].set_xlabel('Average Profit (USD)', fontsize=14, fontweight='medium')

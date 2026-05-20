@@ -1,6 +1,6 @@
 # Movie Data Analytics Platform
 
-DPW1002 Group Project (Group 05, 2026) — A comprehensive movie data analysis platform built on the TMDB MovieLens dataset, featuring data cleaning, statistical analysis, machine learning, and an interactive Streamlit dashboard.
+DPW1003 Group Project (Group 05, 2026) — A comprehensive movie data analysis platform built on the TMDB MovieLens dataset, featuring data cleaning, statistical analysis, machine learning, and an interactive Streamlit dashboard.
 
 ## Tech Stack
 
@@ -150,13 +150,13 @@ python regression_model/profitability_model.py
 
 ## Team
 
-| Member | Contribution |
-|--------|-------------|
-| 1.     |             |
-| 2.     |             |
-| 3.     |             |
-| 4.     |             |
-| 5.     |             |
-| 6.     |             |
+| Member         |     Part                                       | Contribution |
+| -------------- | ---------------------------------------------- | ------------ |
+| Wang Zirui     | Data Clean, Dashboard Visualization            |     16.6%    |
+| Xie Yuejiaxuan | Country + Actors & Directors Analysis, repoert |     16.6%    |
+| Chen Bohan     | Rating + person Analysis, report               |     16.6%    |
+| Mei yuxuan     | Release + Keywords Anaylisis, report           |     16.6%    |
+| Li Baicheng    | Budget Anaylsis, Report                        |     16.6%    |
+| Huang Haolang  | Cross Analysis, Mechine Learning, Report       |     16.6%    |
 
-DPW1002 Group 05, 2026
+DPW1003 Group 05, 2026
